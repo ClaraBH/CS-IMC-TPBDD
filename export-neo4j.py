@@ -14,6 +14,7 @@ username = os.environ["TPBDD_USERNAME"]
 password = os.environ["TPBDD_PASSWORD"]
 driver= os.environ["ODBC_DRIVER"]
 
+#NEO4J
 neo4j_server = os.environ["TPBDD_NEO4J_SERVER"]
 neo4j_user = os.environ["TPBDD_NEO4J_USER"]
 neo4j_password = os.environ["TPBDD_NEO4J_PASSWORD"]
@@ -105,7 +106,7 @@ with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE=
 
         for row in rows:
             relTuple=(row[0], {}, row[2])
-            cat = row[1].replace(" ","_").upper()
+            cat = row[1].replace(" ","_")
             importData[cat].append(relTuple)
 
         try:
@@ -116,7 +117,7 @@ with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE=
                 # ATTENTION: remplacez les espaces par des _ pour nommer les types de relation
                 print(f"{cat} RELATIONS ENTRE LES NOEUDS")
                 for cat in importData:
-                    create_relationships(graph.auto(), importData[cat] , rel_type=cat ,  start_node_key=("Artist", "idArtist") , end_node_key=("Film", "idFilm"))
+                    create_relationships(graph.auto(), importData[cat] , rel_type=cat.upper() , start_node_key=("Artist", "idArtist") , end_node_key=("Film", "idFilm")) 
             exportedCount += len(rows)
             print(f"{exportedCount}/{totalCount} relationships exported to Neo4j")
         except Exception as error:
