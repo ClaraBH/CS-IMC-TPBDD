@@ -99,15 +99,14 @@ with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE=
     totalCount = cursor.fetchval()
     cursor.execute(f"SELECT idArtist, category, idFilm FROM tJob")
     while True:
-        importData = { "acted_in": [], "directed": [], "produced": [], "composed": [] }
+        importData = { "acted in": [], "directed": [], "produced": [], "composed": [] }
         rows = cursor.fetchmany(BATCH_SIZE)
         if not rows:
             break
 
         for row in rows:
             relTuple=(row[0], {}, row[2])
-            cat = row[1].replace(" ","_")
-            importData[cat].append(relTuple)
+            importData[row[1]].append(relTuple)
 
         try:
             for cat in importData:
@@ -115,9 +114,8 @@ with pyodbc.connect('DRIVER='+driver+';SERVER=tcp:'+server+';PORT=1433;DATABASE=
                 # (les tuples nécessaires ont déjà été créés ci-dessus dans la boucle for précédente)
                 # https://py2neo.org/2021.1/bulk/index.html
                 # ATTENTION: remplacez les espaces par des _ pour nommer les types de relation
-                print(f"{cat} RELATIONS ENTRE LES NOEUDS")
-                for cat in importData:
-                    create_relationships(graph.auto(), importData[cat] , rel_type=cat.upper() , start_node_key=("Artist", "idArtist") , end_node_key=("Film", "idFilm")) 
+                rel_type = cat.replace(" ", "_").upper()
+                create_relationships(graph.auto(), importData[cat] , rel_type , start_node_key=("Artist", "idArtist") , end_node_key=("Film", "idFilm")) 
             exportedCount += len(rows)
             print(f"{exportedCount}/{totalCount} relationships exported to Neo4j")
         except Exception as error:
